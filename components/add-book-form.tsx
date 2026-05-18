@@ -1,19 +1,27 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowDown, ArrowUpRight, ChevronDown, Clock } from "lucide-react";
+import { ArrowDown, ArrowUpRight, Clock } from "lucide-react";
 import type { Resolver } from "react-hook-form";
-import { useForm, useWatch } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import {
   ADD_BOOK_FORM_DEFAULT_VALUES,
   ADD_BOOK_INITIAL_READING_DAYS,
-  ADD_BOOK_SELECT_WRAPPER_CLASSNAME,
+  ADD_BOOK_OBJECTIVE_OPTIONS,
+  ADD_BOOK_QUESTION_INTERVAL_OPTIONS,
 } from "@/constants/add-book-form";
 import { DAY_KEYS, DAY_LABELS, type ReadingDayKey } from "@/constants/reading-days";
 import { SectionCard } from "@/components/section-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   type AddBookFormInput,
   addBookFormSchema,
@@ -23,13 +31,8 @@ import { cn } from "@/lib/utils";
 
 export type { AddBookFormInput, AddBookFormValues } from "@/lib/validations/add-book-form";
 
-function selectClass(invalid?: boolean) {
-  return cn(
-    "w-full appearance-none rounded-lg border-0 bg-transparent px-3 text-sm text-foreground outline-none",
-    "focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50",
-    invalid && "text-destructive"
-  );
-}
+const BOOK_SELECT_TRIGGER =
+  "h-11 w-full min-w-0 justify-between [&_[data-slot=select-value]>span]:line-clamp-2";
 
 export function AddBookForm() {
   const {
@@ -208,53 +211,79 @@ export function AddBookForm() {
 
       <SectionCard title="Guía de preguntas">
         <div className="space-y-2">
-          <Label htmlFor="objective" className="text-muted-foreground">
+          <Label htmlFor="objective-select" className="text-muted-foreground">
             ¿Qué querés sacar de este libro?
           </Label>
-          <div className={ADD_BOOK_SELECT_WRAPPER_CLASSNAME}>
-            <select id="objective" className={selectClass()} {...register("objective")}>
-              <option value="">Seleccioná un objetivo</option>
-              <option value="conceptos-clave">Entender los conceptos clave</option>
-              <option value="aplicar-vida">Aplicarlo en mi día a día</option>
-              <option value="resumen">Sacar conclusiones/resumen útil</option>
-              <option value="critica">Contrastar opiniones críticas</option>
-              <option value="estudio">Preparación para examen o estudio profundo</option>
-            </select>
-            <ChevronDown
-              className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground"
-              aria-hidden
-            />
-          </div>
+          <Controller
+            control={control}
+            name="objective"
+            render={({ field }) => (
+              <Select
+                value={field.value === "" ? null : field.value}
+                onValueChange={(v) =>
+                  field.onChange(v ?? "")
+                }
+              >
+                <SelectTrigger
+                  id="objective-select"
+                  ref={field.ref}
+                  aria-invalid={!!errors.objective}
+                  onBlur={field.onBlur}
+                  className={BOOK_SELECT_TRIGGER}
+                >
+                  <SelectValue placeholder="Seleccioná un objetivo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ADD_BOOK_OBJECTIVE_OPTIONS.map(({ value: optionValue, label }) => (
+                    <SelectItem key={optionValue} value={optionValue}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
           <p className="text-caption leading-caption text-muted-foreground">
             La IA ajusta el tipo de preguntas según tu objetivo.
           </p>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="questionEveryPages" className="text-muted-foreground">
+          <Label htmlFor="interval-select" className="text-muted-foreground">
             ¿Cada cuántas páginas querés una pregunta?
           </Label>
-          <div className={ADD_BOOK_SELECT_WRAPPER_CLASSNAME}>
-            <select
-              id="questionEveryPages"
-              className={selectClass()}
-              {...register("questionEveryPages")}
-            >
-              <option value="">Seleccioná un intervalo</option>
-              <option value="10">Cada 10 páginas</option>
-              <option value="20">Cada 20 páginas</option>
-              <option value="30">Cada 30 páginas</option>
-              <option value="50">Cada 50 páginas</option>
-              <option value="cap">Al finalizar cada capítulo</option>
-            </select>
-            <ChevronDown
-              className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground"
-              aria-hidden
-            />
-          </div>
+          <Controller
+            control={control}
+            name="questionEveryPages"
+            render={({ field }) => (
+              <Select
+                value={field.value === "" ? null : field.value}
+                onValueChange={(v) =>
+                  field.onChange(v ?? "")
+                }
+              >
+                <SelectTrigger
+                  id="interval-select"
+                  ref={field.ref}
+                  aria-invalid={!!errors.questionEveryPages}
+                  onBlur={field.onBlur}
+                  className={BOOK_SELECT_TRIGGER}
+                >
+                  <SelectValue placeholder="Seleccioná un intervalo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ADD_BOOK_QUESTION_INTERVAL_OPTIONS.map(({ value: optionValue, label }) => (
+                    <SelectItem key={optionValue} value={optionValue}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
         </div>
       </SectionCard>
 
-      <footer className="sticky bottom-0 z-10 grid gap-5 border-border border-t bg-background/80 px-2 py-5 backdrop-blur-md supports-backdrop-filter:bg-background/65 sm:grid-cols-[1fr_auto_1fr] sm:items-center sm:gap-4">
+      <footer className="sticky bottom-0 z-10 grid gap-5 border-border border-t bg-background/80 px-2 py-5 backdrop-blur-md supports-[backdrop-filter]:bg-background/65 sm:grid-cols-[1fr_auto_1fr] sm:items-center sm:gap-4">
         <p className="order-3 text-caption leading-caption text-muted-foreground sm:order-0 sm:justify-self-start">
           Los campos con <span className="text-destructive">*</span> son obligatorios
         </p>

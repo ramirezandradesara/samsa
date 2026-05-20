@@ -1,7 +1,10 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowDown, ArrowUpRight, Clock } from "lucide-react";
+import { ArrowDown, ArrowUpRight, Clock, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import type { Resolver } from "react-hook-form";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import {
@@ -22,19 +25,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { createClientRoutineId } from "@/lib/storage/client-id";
+import { persistReadingRoutineDraft } from "@/lib/storage/persist-reading-routine";
 import {
   type AddBookFormInput,
   addBookFormSchema,
   type AddBookFormValues,
 } from "@/lib/validations/add-book-form";
+import {
+  apiReadingRoutineResponseSchema,
+} from "@/lib/validations/reading-routine";
 import { cn } from "@/lib/utils";
 
 export type { AddBookFormInput, AddBookFormValues } from "@/lib/validations/add-book-form";
+export type { ReadingRoutine } from "@/lib/validations/reading-routine";
 
 const BOOK_SELECT_TRIGGER =
   "h-11 w-full min-w-0 justify-between [&_[data-slot=select-value]>span]:line-clamp-2";
 
 export function AddBookForm() {
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
   const {
     control,
     register,
@@ -68,12 +81,62 @@ export function AddBookForm() {
     window.scrollBy({ top: Math.min(window.innerHeight * 0.85, 480), behavior: "smooth" });
   }
 
+  async function submitToApi(data: AddBookFormValues) {
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const res = await fetch("/api/reading-routine", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      let payload: unknown;
+      try {
+        payload = await res.json();
+      } catch {
+        setSubmitError("Respuesta ilegible del servidor.");
+        return;
+      }
+
+      if (!res.ok || !payload || typeof payload !== "object") {
+        const msg =
+          payload &&
+          typeof payload === "object" &&
+          "message" in payload &&
+          typeof (payload as { message: unknown }).message === "string"
+            ? (payload as { message: string }).message
+            : "No se pudo generar la rutina.";
+        setSubmitError(msg);
+        return;
+      }
+
+      const parsed = apiReadingRoutineResponseSchema.safeParse(payload);
+      if (!parsed.success) {
+        setSubmitError("Respuesta corrupta desde el servidor.");
+        return;
+      }
+
+      const draftId = createClientRoutineId();
+      await persistReadingRoutineDraft({
+        id: draftId,
+        generatedAt: new Date().toISOString(),
+        formSnapshot: data,
+        routine: parsed.data.routine,
+      });
+      router.push(`/routine?id=${encodeURIComponent(draftId)}`);
+    } catch {
+      setSubmitError("Error de red. Probá de nuevo.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <form
       noValidate
-      onSubmit={handleSubmit((data) => {
-        console.info("Datos del libro", data);
-      })}
+      onSubmit={handleSubmit(submitToApi)}
       className="mx-auto flex w-full max-w-lg flex-col gap-8 pb-28 pt-10"
     >
       <header className="space-y-2">
@@ -82,6 +145,14 @@ export function AddBookForm() {
         </h1>
         <p className="max-w-md text-body leading-body text-muted-foreground">
           La IA va a generar tu guía de lectura con estos datos.
+        </p>
+        <p className="text-caption">
+          <Link
+            className="text-muted-foreground underline underline-offset-4 hover:text-foreground"
+            href="/routine"
+          >
+            Ver rutina guardada
+          </Link>
         </p>
       </header>
 
@@ -283,6 +354,16 @@ export function AddBookForm() {
         </div>
       </SectionCard>
 
+      {submitError && (
+        <p
+          className="text-caption text-destructive"
+          role="alert"
+        >
+          {submitError}
+        </p>
+      )}
+
+
       <footer className="sticky bottom-0 z-10 grid gap-5 border-border border-t bg-background/80 px-2 py-5 backdrop-blur-md supports-[backdrop-filter]:bg-background/65 sm:grid-cols-[1fr_auto_1fr] sm:items-center sm:gap-4">
         <p className="order-3 text-caption leading-caption text-muted-foreground sm:order-0 sm:justify-self-start">
           Los campos con <span className="text-destructive">*</span> son obligatorios
@@ -305,10 +386,20 @@ export function AddBookForm() {
           type="submit"
           variant="outline"
           size="lg"
-          className="order-2 h-11 w-full gap-2 rounded-xl border-primary-foreground/25 bg-muted/40 hover:bg-muted sm:order-0 sm:ml-auto sm:w-auto sm:justify-self-end"
+          disabled={isSubmitting}
+          className="order-2 h-11 w-full gap-2 rounded-xl border-primary-foreground/25 bg-muted/40 hover:bg-muted disabled:opacity-70 sm:order-0 sm:ml-auto sm:w-auto sm:justify-self-end"
         >
-          Generar guía
-          <ArrowUpRight className="size-4" aria-hidden />
+          {isSubmitting ? (
+            <>
+              <Loader2 className="size-4 animate-spin" aria-hidden />
+              Generando…
+            </>
+          ) : (
+            <>
+              Generar guía
+              <ArrowUpRight className="size-4" aria-hidden />
+            </>
+          )}
         </Button>
       </footer>
     </form>

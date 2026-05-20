@@ -3,25 +3,49 @@ import { DAY_KEYS } from "@/constants/reading-days";
 
 const dayKeySchema = z.enum(DAY_KEYS);
 
-const positivePages = z
-  .string()
-  .trim()
-  .min(1, "Completá las páginas")
-  .refine((s) => /^\d+$/.test(s), {
-    message: "Usá solo números enteros",
-  })
-  .transform((s) => Number.parseInt(s, 10))
-  .refine((n) => n > 0, { message: "Ingresá una cantidad mayor a cero" });
+/**
+ * Campos que en el navegador vienen como string pero al serializar JSON
+ * suelen llegar como number (valor ya transformado del resolver).
+ */
+function positiveIntegerSchema(options: {
+  emptyMessage: string;
+  digitMessage: string;
+  positiveMessage: string;
+}) {
+  return z
+    .preprocess((val): string => {
+      if (val === undefined || val === null) {
+        return "";
+      }
+      if (typeof val === "number" && Number.isFinite(val)) {
+        return String(Math.trunc(val));
+      }
+      if (typeof val === "string") {
+        return val.trim();
+      }
+      return "";
+    }, z.string())
+    .pipe(
+      z
+        .string()
+        .min(1, options.emptyMessage)
+        .regex(/^\d+$/, options.digitMessage)
+        .transform((s) => Number.parseInt(s, 10))
+        .refine((n) => n > 0, { message: options.positiveMessage })
+    );
+}
 
-const positiveDays = z
-  .string()
-  .trim()
-  .min(1, "Completá los días")
-  .refine((s) => /^\d+$/.test(s), {
-    message: "Usá solo números enteros",
-  })
-  .transform((s) => Number.parseInt(s, 10))
-  .refine((n) => n > 0, { message: "Ingresá al menos un día" });
+const positivePages = positiveIntegerSchema({
+  emptyMessage: "Completá las páginas",
+  digitMessage: "Usá solo números enteros",
+  positiveMessage: "Ingresá una cantidad mayor a cero",
+});
+
+const positiveDays = positiveIntegerSchema({
+  emptyMessage: "Completá los días",
+  digitMessage: "Usá solo números enteros",
+  positiveMessage: "Ingresá al menos un día",
+});
 
 export const addBookFormSchema = z.object({
   title: z.string().min(1, "Completá el título"),

@@ -1,0 +1,9 @@
+import { AddBookForm } from "@/components/add-book-form";
+
+export default function RoutineFormPage() {
+  return (
+    <div className="relative flex flex-1 flex-col bg-background px-4 font-sans sm:px-6">
+      <AddBookForm />
+    </div>
+  );
+}

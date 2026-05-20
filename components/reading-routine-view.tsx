@@ -77,7 +77,7 @@ export function ReadingRoutineView({
           Recordatorio ({routine.reminderAlignment})
         </p>
         <p className="text-caption text-muted-foreground">
-          Guardada también en este dispositivo (localStorage).
+          Rutina almacenada en la base de datos.
         </p>
       </div>
     </SectionCard>

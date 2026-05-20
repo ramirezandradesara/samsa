@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useMemo } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { ReadingRoutineView } from "@/components/reading-routine-view";
 import { buttonVariants } from "@/components/ui/button";
 import {
-  getReadingRoutineById,
-  loadReadingRoutinesFromLocalStorage,
-} from "@/lib/storage/reading-routine-local";
+  savedReadingRoutinePayloadSchema,
+  type SavedReadingRoutinePayload,
+} from "@/lib/validations/saved-reading-routine";
 import { cn } from "@/lib/utils";
 
 function formatSavedMeta(iso: string) {
@@ -22,25 +22,73 @@ function formatSavedMeta(iso: string) {
   }
 }
 
-function RoutineDetailInner() {
-  const searchParams = useSearchParams();
-  const id = searchParams.get("id");
+function NeedsIdFallback() {
+  return (
+    <div className="mx-auto flex max-w-lg flex-col gap-4 py-14 text-body text-muted-foreground">
+      <p>
+        Esta vista necesita el parámetro <code className="text-foreground">?id=…</code> del
+        enlace que aparece después de generar la guía.
+      </p>
+      <Link
+        className={cn(
+          buttonVariants({ variant: "outline", size: "default", className: "w-fit" })
+        )}
+        href="/routine-form"
+      >
+        Ir al formulario
+      </Link>
+    </div>
+  );
+}
 
-  const snapshot = useMemo(() => {
-    if (id) {
-      return getReadingRoutineById(id) ?? null;
+function RoutineDetailLoaded({ routineId }: { routineId: string }) {
+  const [snapshot, setSnapshot] = useState<
+    SavedReadingRoutinePayload | null | undefined
+  >(undefined);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      try {
+        const res = await fetch(
+          `/api/routines/${encodeURIComponent(routineId)}`,
+          { method: "GET" }
+        );
+        const raw: unknown = await res.json().catch(() => undefined);
+
+        if (res.ok && raw && typeof raw === "object") {
+          const validated = savedReadingRoutinePayloadSchema.safeParse(raw);
+          if (validated.success && !cancelled) {
+            setSnapshot(validated.data);
+            return;
+          }
+        }
+      } catch {
+        //
+      }
+
+      if (!cancelled) {
+        setSnapshot(null);
+      }
     }
-    return loadReadingRoutinesFromLocalStorage()[0] ?? null;
-  }, [id]);
+
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, [routineId]);
+
+  if (snapshot === undefined) {
+    return (
+      <p className="mx-auto py-14 text-muted-foreground">Cargando tu rutina…</p>
+    );
+  }
 
   if (!snapshot) {
-    const headline = id
-      ? "No encontramos esa rutina en este dispositivo."
-      : "Todavía no generaste ninguna rutina.";
-
     return (
       <div className="mx-auto flex max-w-lg flex-col gap-4 py-14 text-body text-muted-foreground">
-        <p>{headline}</p>
+        <p>No encontramos esa rutina en la base de datos.</p>
         <Link
           className={cn(
             buttonVariants({ variant: "outline", size: "default", className: "w-fit" })
@@ -73,6 +121,17 @@ function RoutineDetailInner() {
   );
 }
 
+function RoutineDetailBootstrap() {
+  const rawId = useSearchParams().get("id");
+  const routineId = rawId?.trim() ?? "";
+
+  if (!routineId) {
+    return <NeedsIdFallback />;
+  }
+
+  return <RoutineDetailLoaded key={routineId} routineId={routineId} />;
+}
+
 export function RoutineDetailClient() {
   return (
     <Suspense
@@ -80,7 +139,7 @@ export function RoutineDetailClient() {
         <p className="mx-auto py-14 text-muted-foreground">Cargando tu rutina…</p>
       }
     >
-      <RoutineDetailInner />
+      <RoutineDetailBootstrap />
     </Suspense>
   );
 }

@@ -2,7 +2,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowDown, ArrowUpRight, Clock, Loader2 } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Resolver } from "react-hook-form";
@@ -126,8 +125,10 @@ export function AddBookForm() {
         routine: parsed.data.routine,
       });
       router.push(`/routine?id=${encodeURIComponent(draftId)}`);
-    } catch {
-      setSubmitError("Error de red. Probá de nuevo.");
+    } catch (e) {
+      setSubmitError(
+        e instanceof Error ? e.message : "Error de red. Probá de nuevo."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -145,14 +146,6 @@ export function AddBookForm() {
         </h1>
         <p className="max-w-md text-body leading-body text-muted-foreground">
           La IA va a generar tu guía de lectura con estos datos.
-        </p>
-        <p className="text-caption">
-          <Link
-            className="text-muted-foreground underline underline-offset-4 hover:text-foreground"
-            href="/routine"
-          >
-            Ver rutina guardada
-          </Link>
         </p>
       </header>
 

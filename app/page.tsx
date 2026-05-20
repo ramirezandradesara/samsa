@@ -23,12 +23,6 @@ export default function Home() {
       >
         Ir al formulario
       </Link>
-      <Link
-        className="text-caption text-muted-foreground underline underline-offset-4 hover:text-foreground"
-        href="/routine"
-      >
-        Ver última rutina guardada
-      </Link>
     </div>
   );
 }

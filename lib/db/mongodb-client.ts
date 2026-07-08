@@ -22,7 +22,10 @@ export function getMongoClientPromise(): Promise<MongoClient> {
 
   if (!globalForMongo.mongoClientPromise) {
     const client = new MongoClient(uri);
-    globalForMongo.mongoClientPromise = client.connect();
+    globalForMongo.mongoClientPromise = client.connect().catch((error) => {
+      globalForMongo.mongoClientPromise = undefined;
+      throw error;
+    });
   }
   
   return globalForMongo.mongoClientPromise;

@@ -1,17 +1,17 @@
-import { ArrowDown, ArrowUpRight, Loader2 } from "lucide-react";
-import { Button } from "../ui/button";
-import { scrollSmooth } from "@/helpers/scrollSmooth";
+import { ArrowDown, ArrowUpRight, Loader2 } from 'lucide-react'
+import { Button } from '../ui/button'
+import { scrollSmooth } from '@/helpers/scrollSmooth'
 
 type FormFooterProps = {
-  isSubmitting: boolean;
-  submitLabel?: string;
-  submittingLabel?: string;
-};
+  isSubmitting: boolean
+  submitLabel?: string
+  submittingLabel?: string
+}
 
 function FormFooter({
   isSubmitting,
-  submitLabel = "Generar guía",
-  submittingLabel = "Generando…",
+  submitLabel = 'Generar guía',
+  submittingLabel = 'Generando…',
 }: FormFooterProps) {
   return (
     <footer className="sticky bottom-0 z-10 grid gap-5 border-border border-t bg-background/80 px-2 py-5 backdrop-blur-md supports-backdrop-filter:bg-background/65 sm:grid-cols-[1fr_auto_1fr] sm:items-center sm:gap-4">
@@ -53,7 +53,7 @@ function FormFooter({
         )}
       </Button>
     </footer>
-  );
+  )
 }
 
-export default FormFooter;
+export default FormFooter

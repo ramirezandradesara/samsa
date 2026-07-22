@@ -1,11 +1,11 @@
-import { SectionCard } from "@/components/section-card";
-import type { ReadingRoutine } from "@/lib/validations/reading-routine";
+import { SectionCard } from '@/components/section-card'
+import type { ReadingRoutine } from '@/lib/validations/reading-routine'
 
 type ReadingRoutineViewProps = {
-  routine: ReadingRoutine;
+  routine: ReadingRoutine
   /** Ej. libro + fecha de generación */
-  metaLine?: string;
-};
+  metaLine?: string
+}
 
 export function ReadingRoutineView({
   routine,
@@ -40,10 +40,12 @@ export function ReadingRoutineView({
           <ul className="list-inside list-disc space-y-1 text-muted-foreground">
             {routine.weeklySessions.map((s, i) => (
               <li key={`${s.dayLabel}-${i}`}>
-                <span className="font-medium text-foreground">{s.dayLabel}</span>
-                {": "}
+                <span className="font-medium text-foreground">
+                  {s.dayLabel}
+                </span>
+                {': '}
                 {s.suggestedPages} págs.
-                {s.note ? ` — ${s.note}` : ""}
+                {s.note ? ` — ${s.note}` : ''}
               </li>
             ))}
           </ul>
@@ -81,5 +83,5 @@ export function ReadingRoutineView({
         </p>
       </div>
     </SectionCard>
-  );
+  )
 }

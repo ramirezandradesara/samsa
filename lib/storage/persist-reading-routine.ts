@@ -1,4 +1,4 @@
-import type { SavedReadingRoutinePayload } from "@/lib/validations/saved-reading-routine";
+import type { SavedReadingRoutinePayload } from '@/lib/validations/saved-reading-routine'
 
 /**
  * Guarda la rutina en MongoDB vía Route Handler (`POST /api/routines`).
@@ -6,30 +6,30 @@ import type { SavedReadingRoutinePayload } from "@/lib/validations/saved-reading
 export async function persistReadingRoutineDraft(
   payload: SavedReadingRoutinePayload
 ): Promise<void> {
-  const res = await fetch("/api/routines", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+  const res = await fetch('/api/routines', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
-  });
+  })
 
   if (res.ok) {
-    return;
+    return
   }
 
-  let message = "No se pudo guardar la rutina.";
+  let message = 'No se pudo guardar la rutina.'
   try {
-    const raw: unknown = await res.json();
+    const raw: unknown = await res.json()
     if (
       raw &&
-      typeof raw === "object" &&
-      "message" in raw &&
-      typeof (raw as { message: unknown }).message === "string"
+      typeof raw === 'object' &&
+      'message' in raw &&
+      typeof (raw as { message: unknown }).message === 'string'
     ) {
-      message = (raw as { message: string }).message;
+      message = (raw as { message: string }).message
     }
   } catch {
     //
   }
 
-  throw new Error(message);
+  throw new Error(message)
 }

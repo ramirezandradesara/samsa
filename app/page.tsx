@@ -1,6 +1,6 @@
-import Link from "next/link";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import Link from 'next/link'
+import { buttonVariants } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 export default function Home() {
   return (
@@ -14,9 +14,9 @@ export default function Home() {
       <Link
         className={cn(
           buttonVariants({
-            variant: "default",
-            size: "lg",
-            className: "inline-flex no-underline",
+            variant: 'default',
+            size: 'lg',
+            className: 'inline-flex no-underline',
           })
         )}
         href="/routine-form"
@@ -24,5 +24,5 @@ export default function Home() {
         Ir al formulario
       </Link>
     </div>
-  );
+  )
 }

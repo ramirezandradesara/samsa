@@ -1,39 +1,35 @@
-import { Label } from "../ui/label";
+import { Label } from '../ui/label'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../ui/select";
-import {
-  Control,
-  Controller,
-  FieldPath,
-  FieldValues,
-} from "react-hook-form";
+} from '../ui/select'
+import type { Control, FieldPath, FieldValues } from 'react-hook-form'
+import { Controller } from 'react-hook-form'
 
 const FORM_SELECT_TRIGGER =
-  "h-11 w-full min-w-0 justify-between [&_[data-slot=select-value]>span]:line-clamp-2";
+  'h-11 w-full min-w-0 justify-between [&_[data-slot=select-value]>span]:line-clamp-2'
 
 type FormSelectOption = {
-  value: string;
-  label: string;
-};
+  value: string
+  label: string
+}
 
 type FormSelectProps<
   TFieldValues extends FieldValues,
   TContext = unknown,
   TTransformedValues = TFieldValues,
 > = {
-  name: FieldPath<TFieldValues>;
-  label: string;
-  control: Control<TFieldValues, TContext, TTransformedValues>;
-  options: ReadonlyArray<FormSelectOption>;
-  placeholder?: string;
-  description?: string;
-  required?: boolean;
-};
+  name: FieldPath<TFieldValues>
+  label: string
+  control: Control<TFieldValues, TContext, TTransformedValues>
+  options: ReadonlyArray<FormSelectOption>
+  placeholder?: string
+  description?: string
+  required?: boolean
+}
 
 function FormSelect<
   TFieldValues extends FieldValues,
@@ -58,15 +54,15 @@ function FormSelect<
             {label}
             {required && (
               <>
-                {" "}
+                {' '}
                 <span className="text-destructive">*</span>
               </>
             )}
           </Label>
           <Select
             items={options}
-            value={field.value === "" ? null : field.value}
-            onValueChange={(v) => field.onChange(v ?? "")}
+            value={field.value === '' ? null : field.value}
+            onValueChange={(v) => field.onChange(v ?? '')}
           >
             <SelectTrigger
               id={name}
@@ -98,7 +94,7 @@ function FormSelect<
         </div>
       )}
     />
-  );
+  )
 }
 
-export default FormSelect;
+export default FormSelect

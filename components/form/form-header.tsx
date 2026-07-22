@@ -1,7 +1,7 @@
 type FormHeaderProps = {
-  title: string;
-  description: string;
-};
+  title: string
+  description: string
+}
 
 function FormHeader({ title, description }: FormHeaderProps) {
   return (
@@ -13,7 +13,7 @@ function FormHeader({ title, description }: FormHeaderProps) {
         {description}
       </p>
     </header>
-  );
+  )
 }
 
-export default FormHeader;
+export default FormHeader

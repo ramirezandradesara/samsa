@@ -1,41 +1,41 @@
-"use client";
+'use client'
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import type { Resolver } from "react-hook-form";
-import { useForm } from "react-hook-form";
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import type { Resolver } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import {
   ADD_BOOK_FORM_DEFAULT_VALUES,
   ADD_BOOK_OBJECTIVE_OPTIONS,
   ADD_BOOK_QUESTION_INTERVAL_OPTIONS,
-} from "@/constants/add-book-form";
-import { DAY_KEYS, DAY_LABELS } from "@/constants/reading-days";
-import { SectionCard } from "@/components/section-card";
-import { createClientRoutineId } from "@/lib/storage/client-id";
-import { persistReadingRoutineDraft } from "@/lib/storage/persist-reading-routine";
+} from '@/constants/add-book-form'
+import { DAY_KEYS, DAY_LABELS } from '@/constants/reading-days'
+import { SectionCard } from '@/components/section-card'
+import { createClientRoutineId } from '@/lib/storage/client-id'
+import { persistReadingRoutineDraft } from '@/lib/storage/persist-reading-routine'
 import {
   type AddBookFormInput,
   addBookFormSchema,
   type AddBookFormValues,
-} from "@/lib/validations/add-book-form";
-import { apiReadingRoutineResponseSchema } from "@/lib/validations/reading-routine";
-import FormInput from "./form/form-input";
-import FormSelect from "./form/form-select";
-import FormToggleGroup from "./form/form-toggle-group";
-import FormFooter from "./form/form-footer";
-import FormHeader from "./form/form-header";
+} from '@/lib/validations/add-book-form'
+import { apiReadingRoutineResponseSchema } from '@/lib/validations/reading-routine'
+import FormInput from './form/form-input'
+import FormSelect from './form/form-select'
+import FormToggleGroup from './form/form-toggle-group'
+import FormFooter from './form/form-footer'
+import FormHeader from './form/form-header'
 
 export type {
   AddBookFormInput,
   AddBookFormValues,
-} from "@/lib/validations/add-book-form";
-export type { ReadingRoutine } from "@/lib/validations/reading-routine";
+} from '@/lib/validations/add-book-form'
+export type { ReadingRoutine } from '@/lib/validations/reading-routine'
 
 export function AddBookForm() {
-  const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const router = useRouter()
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const { control, handleSubmit, trigger } = useForm<
     AddBookFormInput,
@@ -48,59 +48,59 @@ export function AddBookForm() {
       AddBookFormValues
     >,
     defaultValues: ADD_BOOK_FORM_DEFAULT_VALUES,
-  });
+  })
 
   async function submitToApi(data: AddBookFormValues) {
-    setIsSubmitting(true);
-    setSubmitError(null);
+    setIsSubmitting(true)
+    setSubmitError(null)
 
     try {
-      const res = await fetch("/api/reading-routine", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('/api/reading-routine', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
-      });
+      })
 
-      let payload: unknown;
+      let payload: unknown
       try {
-        payload = await res.json();
+        payload = await res.json()
       } catch {
-        setSubmitError("Respuesta ilegible del servidor.");
-        return;
+        setSubmitError('Respuesta ilegible del servidor.')
+        return
       }
 
-      if (!res.ok || !payload || typeof payload !== "object") {
+      if (!res.ok || !payload || typeof payload !== 'object') {
         const msg =
           payload &&
-          typeof payload === "object" &&
-          "message" in payload &&
-          typeof (payload as { message: unknown }).message === "string"
+          typeof payload === 'object' &&
+          'message' in payload &&
+          typeof (payload as { message: unknown }).message === 'string'
             ? (payload as { message: string }).message
-            : "No se pudo generar la rutina.";
-        setSubmitError(msg);
-        return;
+            : 'No se pudo generar la rutina.'
+        setSubmitError(msg)
+        return
       }
 
-      const parsed = apiReadingRoutineResponseSchema.safeParse(payload);
+      const parsed = apiReadingRoutineResponseSchema.safeParse(payload)
       if (!parsed.success) {
-        setSubmitError("Respuesta corrupta desde el servidor.");
-        return;
+        setSubmitError('Respuesta corrupta desde el servidor.')
+        return
       }
 
-      const draftId = createClientRoutineId();
+      const draftId = createClientRoutineId()
       await persistReadingRoutineDraft({
         id: draftId,
         generatedAt: new Date().toISOString(),
         formSnapshot: data,
         routine: parsed.data.routine,
-      });
-      router.push(`/routine?id=${encodeURIComponent(draftId)}`);
+      })
+      router.push(`/routine?id=${encodeURIComponent(draftId)}`)
     } catch (e) {
       setSubmitError(
-        e instanceof Error ? e.message : "Error de red. Probá de nuevo.",
-      );
+        e instanceof Error ? e.message : 'Error de red. Probá de nuevo.'
+      )
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
   }
 
@@ -154,6 +154,7 @@ export function AddBookForm() {
           inputMode="numeric"
           description="Con este dato la app calcula cuántas páginas leer por día."
         />
+
         <FormToggleGroup
           name="readingDays"
           label="¿Qué días de la semana vas a leer?"
@@ -200,5 +201,5 @@ export function AddBookForm() {
 
       <FormFooter isSubmitting={isSubmitting} />
     </form>
-  );
+  )
 }

@@ -1,28 +1,28 @@
 import {
   ADD_BOOK_OBJECTIVE_OPTIONS,
   ADD_BOOK_QUESTION_INTERVAL_OPTIONS,
-} from "@/constants/add-book-form";
-import { DAY_LABELS, type ReadingDayKey } from "@/constants/reading-days";
-import type { AddBookFormValues } from "@/lib/validations/add-book-form";
+} from '@/constants/add-book-form'
+import { DAY_LABELS, type ReadingDayKey } from '@/constants/reading-days'
+import type { AddBookFormValues } from '@/lib/validations/add-book-form'
 
 export function formatReadingDaysLabels(days: ReadingDayKey[]) {
-  return days.map((d) => DAY_LABELS[d]).join(", ");
+  return days.map((d) => DAY_LABELS[d]).join(', ')
 }
 
 function objectiveLabel(code: string | undefined) {
   if (!code?.trim()) {
-    return "No indicado por el usuario; inferí objetivo general tipo comprensión y aplicación práctica moderada.";
+    return 'No indicado por el usuario; inferí objetivo general tipo comprensión y aplicación práctica moderada.'
   }
-  const found = ADD_BOOK_OBJECTIVE_OPTIONS.find((o) => o.value === code);
-  return found ? `${found.label} (value=${found.value})` : code;
+  const found = ADD_BOOK_OBJECTIVE_OPTIONS.find((o) => o.value === code)
+  return found ? `${found.label} (value=${found.value})` : code
 }
 
 function intervalLabel(code: string | undefined) {
   if (!code?.trim()) {
-    return "No indicado por el usuario; usá puntos cada ~25 páginas como default razonable.";
+    return 'No indicado por el usuario; usá puntos cada ~25 páginas como default razonable.'
   }
-  const found = ADD_BOOK_QUESTION_INTERVAL_OPTIONS.find((o) => o.value === code);
-  return found ? `${found.label} (value=${found.value})` : code;
+  const found = ADD_BOOK_QUESTION_INTERVAL_OPTIONS.find((o) => o.value === code)
+  return found ? `${found.label} (value=${found.value})` : code
 }
 
 const JSON_SHAPE = `Respondé únicamente con un objeto JSON válido (sin markdown, sin comentarios) con EXACTAMENTE estas claves y tipos:
@@ -44,21 +44,21 @@ const JSON_SHAPE = `Respondé únicamente con un objeto JSON válido (sin markdo
   },
   "motivationalClosing": string (breve, en español),
   "reminderAlignment": string (cómo encaja la hora de recordatorio con la rutina)
-}`;
+}`
 
 /**
  * Genera mensajes para el modelo: sistema (instrucciones + forma JSON) y usuario (contexto estructurado).
  */
 export function buildReadingRoutineMessages(values: AddBookFormValues) {
-  const readingLabels = formatReadingDaysLabels(values.readingDays);
-  const pagesPerCalendarDay = Math.ceil(values.pages / values.daysToFinish);
-  const effectiveDaysCount = values.readingDays.length;
+  const readingLabels = formatReadingDaysLabels(values.readingDays)
+  const pagesPerCalendarDay = Math.ceil(values.pages / values.daysToFinish)
+  const effectiveDaysCount = values.readingDays.length
 
   const system = [
-    "Sos un coach de lectura amable y práctico. Hablar siempre en español argentino neutro (sin despectivo).",
-    "Generá una rutina de lectura realista acorde a las restricciones del usuario.",
-    "No inventes datos del contenido del libro más allá del título y autor; podés sugerir enfoques genéricos según el objetivo.",
-    "Respetá la relación aproximada: total de páginas, plazo en días calendario, y en qué días de semana sí leen.",
+    'Sos un coach de lectura amable y práctico. Hablar siempre en español argentino neutro (sin despectivo).',
+    'Generá una rutina de lectura realista acorde a las restricciones del usuario.',
+    'No inventes datos del contenido del libro más allá del título y autor; podés sugerir enfoques genéricos según el objetivo.',
+    'Respetá la relación aproximada: total de páginas, plazo en días calendario, y en qué días de semana sí leen.',
     `Referencia númerica (no es obligatorio que tus números finales coincidan al decimal, pero debe ser coherente):`,
     `- total páginas: ${values.pages}`,
     `- terminar en días calendario: ${values.daysToFinish}`,
@@ -66,7 +66,7 @@ export function buildReadingRoutineMessages(values: AddBookFormValues) {
     `- días efectivos marcados (${effectiveDaysCount}): ${readingLabels}`,
     `- orientación muy aproximada páginas/día efectivo (solo guía mental): ~${effectiveDaysCount ? Math.ceil((values.pages * 7) / (values.daysToFinish * effectiveDaysCount)) : pagesPerCalendarDay}`,
     JSON_SHAPE,
-  ].join("\n\n");
+  ].join('\n\n')
 
   const context = {
     book: { title: values.title.trim(), author: values.author.trim() },
@@ -74,17 +74,16 @@ export function buildReadingRoutineMessages(values: AddBookFormValues) {
       pages: values.pages,
       finishWithinCalendarDays: values.daysToFinish,
       readingDays: values.readingDays,
-      readingDayLabels: readingLabels.split(", "),
+      readingDayLabels: readingLabels.split(', '),
       reminderLocalTime: values.reminderTime,
     },
     learning: {
       objective: objectiveLabel(values.objective),
       questionIntervalPreference: intervalLabel(values.questionEveryPages),
     },
-  };
+  }
 
-  const user =
-    `Contexto JSON del usuario (no lo repitas tal cual en la respuesta; usalo para crear la rutina):\n${JSON.stringify(context)}`;
+  const user = `Contexto JSON del usuario (no lo repitas tal cual en la respuesta; usalo para crear la rutina):\n${JSON.stringify(context)}`
 
-  return { system, user };
+  return { system, user }
 }

@@ -1,9 +1,9 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react'
 
 type SectionCardProps = {
-  title: string;
-  children: ReactNode;
-};
+  title: string
+  children: ReactNode
+}
 
 export function SectionCard({ title, children }: SectionCardProps) {
   return (
@@ -13,5 +13,5 @@ export function SectionCard({ title, children }: SectionCardProps) {
       </h2>
       {children}
     </section>
-  );
+  )
 }

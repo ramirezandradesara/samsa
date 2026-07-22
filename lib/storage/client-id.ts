@@ -2,13 +2,13 @@
 export function createClientRoutineId(): string {
   try {
     if (
-      typeof crypto !== "undefined" &&
-      typeof crypto.randomUUID === "function"
+      typeof crypto !== 'undefined' &&
+      typeof crypto.randomUUID === 'function'
     ) {
-      return crypto.randomUUID();
+      return crypto.randomUUID()
     }
   } catch {
     // fallback
   }
-  return `samsa-draft-${Math.random().toString(36).slice(2, 11)}`;
+  return `samsa-draft-${Math.random().toString(36).slice(2, 11)}`
 }

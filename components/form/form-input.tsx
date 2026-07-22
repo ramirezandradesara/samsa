@@ -1,24 +1,25 @@
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
-import type { ComponentProps } from "react";
-import { Control, Controller, FieldPath, FieldValues } from "react-hook-form";
+import { Input } from '../ui/input'
+import { Label } from '../ui/label'
+import type { ComponentProps } from 'react'
+import type { Control, FieldPath, FieldValues } from 'react-hook-form'
+import { Controller } from 'react-hook-form'
 
 type FormInputProps<
   TFieldValues extends FieldValues,
   TContext = unknown,
   TTransformedValues = TFieldValues,
 > = {
-  name: FieldPath<TFieldValues>;
-  label: string;
-  control: Control<TFieldValues, TContext, TTransformedValues>;
-  description?: string;
-  placeholder?: string;
-  required?: boolean;
-  type?: "text" | "number" | "time";
-  min?: number;
-  inputMode?: ComponentProps<"input">["inputMode"];
-  step?: number;
-};
+  name: FieldPath<TFieldValues>
+  label: string
+  control: Control<TFieldValues, TContext, TTransformedValues>
+  description?: string
+  placeholder?: string
+  required?: boolean
+  type?: 'text' | 'number' | 'time'
+  min?: number
+  inputMode?: ComponentProps<'input'>['inputMode']
+  step?: number
+}
 
 function FormInput<
   TFieldValues extends FieldValues,
@@ -31,7 +32,7 @@ function FormInput<
   description,
   placeholder,
   required,
-  type = "text",
+  type = 'text',
   min,
   inputMode,
   step,
@@ -46,7 +47,7 @@ function FormInput<
             {label}
             {required && (
               <>
-                {" "}
+                {' '}
                 <span className="text-destructive">*</span>
               </>
             )}
@@ -76,7 +77,7 @@ function FormInput<
         </div>
       )}
     />
-  );
+  )
 }
 
-export default FormInput;
+export default FormInput
